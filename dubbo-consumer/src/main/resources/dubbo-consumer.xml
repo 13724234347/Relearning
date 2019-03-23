@@ -1,0 +1,15 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!-- 提供方应用信息，用于计算依赖关系 -->
+    <dubbo:application name="dubbo-producer-server" />
+
+    <!-- 这里使用的注册中心是zookeeper -->
+    <dubbo:registry address="zookeeper://192.168.1.213:2181" client="zkclient"/>
+
+    <!-- 从注册中心中查找服务 -->
+    <dubbo:reference id="dubbo-consumer" interface="com.tzh.dubbo_interface.DubboInterface"/>
+
+</beans>

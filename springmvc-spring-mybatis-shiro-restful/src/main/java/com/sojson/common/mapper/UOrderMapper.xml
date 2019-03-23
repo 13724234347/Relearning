@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sojson.common.dao.UOrderMapper" >
+  <resultMap id="uOrder" type="com.sojson.common.model.UOrder" >
+    <id column="id" property="id" />
+    <result column="orderbh" property="orderbh" />
+    <result column="orderType" property="orderType" />
+    <result column="orderNumber" property="orderNumber" />
+    <result column="orderPrice" property="orderPrice" />
+    <result column="orderAddr" property="orderAddr" />
+    <result column="orderEmpnoName" property="orderEmpnoName" />
+    <result column="orderTime" property="orderTime" />
+    <result column="recipient" property="recipient" />
+  </resultMap>
+  <!-- 模糊查询 -->
+	<sql id="searchs">
+		<if test="t.orderbh != null and t.orderbh != ''">
+				and orderbh like '%${t.orderbh}%' 
+		</if>
+	</sql>
+  
+  <select id="getCount" parameterType="com.sojson.common.model.UOrder" resultType="java.lang.Integer">
+		select count(*) from u_order where 1=1
+		<include refid="searchs"></include>
+ </select>
+	
+	<!-- 分页查询所有数据 -->
+	<select id="query" parameterType="com.sojson.common.model.UOrder" resultMap="uOrder">
+		select * from u_order where 1=1
+		<include refid="searchs"></include>
+			order by id asc limit #{limitNum},#{pageSize}
+	</select>
+	<insert id="insert" parameterType="com.sojson.common.model.UOrder">
+		insert into u_order(orderbh,orderType,orderNumber,orderPrice,orderAddr,orderEmpnoName,orderTime,recipient
+		)values(#{orderbh},#{orderType},#{orderNumber},#{orderPrice},#{orderAddr},#{orderEmpnoName},#{orderTime},#{recipient})
+		
+	</insert>
+	
+	<!-- 删除用户数据 -->
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from u_order where id = #{id} 
+	</delete>
+	<select id="getById" parameterType="java.lang.Integer" resultType="com.sojson.common.model.UOrder">
+		select * from u_order where id =#{id}
+	</select>
+	<!-- 修改用户数据 -->
+	<update id="update" parameterType="com.sojson.common.model.UOrder">
+		update u_order set orderNumber=#{orderNumber},orderPrice=#{orderPrice},orderAddr=#{orderAddr},orderEmpnoName=#{orderEmpnoName},orderTime=#{orderTime},recipient=#{recipient} where id=#{id}
+	</update>
+	 <select id="findpermissionAll" resultType="com.sojson.common.model.UPermission">
+  		select p.url url,p.method method from u_permission p , u_role_permission rp, u_user_role ur 
+		where uid =#{id} and p.id = rp.pid and rp.rid = ur.rid
+  </select>
+</mapper>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <!-- 执行定时任务的java类 -->
+    <bean id="spring_Quartz" class="com.tzh.quartz.Quartz" />
+
+    <!-- 配置方法调用任务工厂(XXXJobDetailFactoryBean) -->
+    <bean id="query"
+        class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="spring_Quartz" />
+        </property>
+        <property name="targetMethod">
+            <value>query</value>
+        </property>
+    </bean>
+
+    <!-- 配置方法调用任务工厂(XXXJobDetailFactoryBean) -->
+    <bean id="add"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="spring_Quartz" />
+        </property>
+        <property name="targetMethod">
+            <value>add</value>
+        </property>
+    </bean>
+
+
+
+    <!-- 配置方法调用任务工厂(XXXJobDetailFactoryBean) -->
+    <bean id="delete"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="spring_Quartz" />
+        </property>
+        <property name="targetMethod">
+            <value>delete</value>
+        </property>
+    </bean>
+
+    <!-- 配置方法调用任务工厂(XXXJobDetailFactoryBean) -->
+    <bean id="update"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="spring_Quartz" />
+        </property>
+        <property name="targetMethod">
+            <value>update</value>
+        </property>
+    </bean>
+
+
+    <!-- 配置Cron触发器(CronTriggerFactoryBean) -->
+    <bean id="queryTime"
+        class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="query" />
+        </property>
+        <property name="cronExpression">
+            <!-- 配置时间间隔 -->
+            <value>0 0/1 * * * ?</value>
+            <!--每分钟执行一次-->
+        </property>
+    </bean>
+
+    <!-- 配置Cron触发器(CronTriggerFactoryBean) -->
+    <bean id="addTime"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="add" />
+        </property>
+        <property name="cronExpression">
+            <!-- 配置时间间隔 -->
+            <value>0/2 * * * * ?</value>
+            <!--每两秒执行一次-->
+        </property>
+    </bean>
+    <!-- 配置Cron触发器(CronTriggerFactoryBean) -->
+    <bean id="deleteTime"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="delete" />
+        </property>
+        <property name="cronExpression">
+            <!-- 配置时间间隔 -->
+            <value>0/3 * * * * ?</value>
+        </property>
+    </bean>
+
+    <!-- 配置Cron触发器(CronTriggerFactoryBean) -->
+    <bean id="updateTime"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="update" />
+        </property>
+        <property name="cronExpression">
+            <!-- 配置时间间隔 -->
+            <value>0/4 * * * * ?</value>
+        </property>
+    </bean>
+
+    <!-- 配置调度器工厂(SchedulerFactoryBean) -->
+    <bean name="startQuertz"
+        class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="queryTime" />
+                <!--<ref bean="addTime" />-->
+                <!--<ref bean="deleteTime" />-->
+                <!--<ref bean="updateTime" />-->
+            </list>
+        </property>
+    </bean>
+</beans>  

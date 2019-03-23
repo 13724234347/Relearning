@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sojson.common.dao.UUserMapper" >
+  <resultMap id="BaseResultMap" type="com.sojson.common.model.UUser" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="nickname" property="nickname" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="pswd" property="pswd" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="last_login_time" property="lastLoginTime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" jdbcType="BIGINT" />
+  </resultMap>
+  <!--通用固定的字段可以，方便查询等调用此id直接使用这些字段 -->
+  <sql id="Base_Column_List" >
+    id, nickname, email, pswd, create_time, last_login_time,status
+  </sql>
+  
+  <!-- 通用sql分页 -->
+  <sql id="limit_sql">
+  	   <if test="page_sql != null and page_sql != ''">
+      	${page_sql}
+      </if>
+  </sql>
+  
+  <!-- 通用sql语句，可以直接调用id，就相当于调用此sql -->
+  <sql id="where_all">
+  	<where>
+  	<if test="findContent != null and findContent !='' " >
+        and (
+        LOWER(nickname) like  LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")) or
+        LOWER(email) like  LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%"))
+        )
+      </if>
+      </where>
+  </sql>
+  
+  <!-- 查询用户所有数据 -->
+  <select id="findAll" resultMap="BaseResultMap" >
+  	 select 
+    <include refid="Base_Column_List" />
+    from u_user 
+    <include refid="where_all"/>
+    <include refid="limit_sql" />
+  </select>
+  
+  <!-- 查询用户总条数 -->
+  <select id="findCount" resultMap="BaseResultMap" >
+ 	 select count(id) from  u_user
+  	<include refid="where_all" />
+  </select>
+  
+  <!-- 用户权限分配的分页查询 -->
+  <select id="findUserAndRole" resultType="com.sojson.permission.bo.UserRoleAllocationBo">
+  	select u.id,u.nickname,u.email,u.create_time,u.last_login_time,u.status ,group_concat(ur.name) roleNames,group_concat(ur.id)roleIds from
+	 u_user u
+	left join u_user_role uur on uur.uid = u.id
+	left join u_role ur on ur.id = uur.rid
+	<where>
+  	<if test="findContent != null and findContent !='' " >
+        and (
+        LOWER(u.nickname) like  LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")) or
+        LOWER(u.email) like  LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%"))
+        )
+      </if>
+      </where>
+	group by u.id 
+  </select>
+  
+  <!-- 根据用户id查询角色 -->
+  <select id="selectRoleByUserId" resultType="com.sojson.permission.bo.URoleBo">
+  		
+		select ur.id,ur.name,ur.type,ifnull(uu.id,0)marker,uu.id userId from u_role ur
+		left join u_user_role uur on uur.rid = ur.id
+		left join (select id from u_user where id =#{id,jdbcType=BIGINT}) uu on uu.id = uur.uid
+		group by ur.id
+  		<!-- 
+  		勾选不上自己调整sql语句，由于mysql版本不同，所以不支持，可以看看Demo项目 http://shiro.itboy.net
+  		select ur.id,ur.name,ur.type,ifnull(uur.uid,0) marker from u_role ur
+		left join(select * from u_user_role where uid=#{id,jdbcType=BIGINT}) uur on uur.rid = ur.id
+		 -->
+  </select>
+  
+  <!-- 登录 -->
+  <select id="login" resultMap="BaseResultMap" >
+  	 select 
+    <include refid="Base_Column_List" />
+    from u_user
+    where email = #{email,jdbcType=VARCHAR} and  pswd = #{pswd,jdbcType=VARCHAR} 
+  </select>
+  
+  <!-- 根据邮箱|帐号查询 -->
+  <select id="findUserByEmail" resultMap="BaseResultMap" >
+  	 select 
+    <include refid="Base_Column_List" />
+    from u_user
+    where email = #{email,jdbcType=VARCHAR} 
+  </select>
+  
+  <!--根据关键字id查询用户  -->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from u_user
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  
+  <!--根据id删除用户  -->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from u_user
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  
+  <!-- 添加用户 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.sojson.common.model.UUser" >
+    insert into u_user (id, nickname, email, 
+      pswd, create_time, last_login_time,status
+      )
+    values (#{id,jdbcType=BIGINT}, #{nickname,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, 
+      #{pswd,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{lastLoginTime,jdbcType=TIMESTAMP},#{status,jdbcType=BIGINT}
+      )
+  </insert>
+  
+  <!-- 选择性添加 -->
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.sojson.common.model.UUser" >
+    insert into u_user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="nickname != null" >
+        nickname,
+      </if>
+      <if test="email != null" >
+        email,
+      </if>
+      <if test="pswd != null" >
+        pswd,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="lastLoginTime != null" >
+        last_login_time,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="nickname != null" >
+        #{nickname,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="pswd != null" >
+        #{pswd,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastLoginTime != null" >
+        #{lastLoginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=BIGINT}
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 根据关键字id，选择性修改用户数据 -->
+  <update id="updateByPrimaryKeySelective" parameterType="com.sojson.common.model.UUser" >
+    update u_user
+    <set >
+      <if test="nickname != null" >
+        nickname = #{nickname,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="pswd != null" >
+        pswd = #{pswd,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastLoginTime != null" >
+        last_login_time = #{lastLoginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  
+  <!-- 根据关键字id修改用户 -->
+  <update id="updateByPrimaryKey" parameterType="com.sojson.common.model.UUser" >
+    update u_user
+    set nickname = #{nickname,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      pswd = #{pswd,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      last_login_time = #{lastLoginTime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

@@ -1,0 +1,22 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+    <!-- 提供方应用名称信息，这个相当于起一个名字，我们dubbo管理页面比较清晰是哪个应用暴露出来的-->
+    <dubbo:application name="dubbo-producer-server" />
+    <!-- 下面的host主要是放到虚拟机中的话，会因为ip不同报错 -->
+    <dubbo:protocol name="dubbo" port="20880"/>
+
+    <!-- 使用集群zookeeper注册中心暴露服务地址  -->
+    <!--<dubbo:registry address="zookeeper://192.168.88.134:2181?backup=192.168.88.134:2182,192.168.88.134:2183" check="false"/>-->
+
+    <!-- 使用单节点zookeeper注册中心暴露服务地址  -->
+    <dubbo:registry address="zookeeper://192.168.1.213:2181" />
+
+    <!--具体实现该接口的 bean-->
+    <bean id="dubbo_producer" class="com.tzh.service.Dubbo_service_implement"/>
+
+    <!-- 要暴露的服务接口 -->
+    <dubbo:service  interface="com.tzh.dubbo_interface.DubboInterface" ref="dubbo_producer"/>
+
+</beans>

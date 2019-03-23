@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--配置缓存管理器-->
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <!--指定eache的配置文件-->
+        <property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml"></property>
+    </bean>
+
+    <!--配置shiro的securityManager的bean.-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="realm" ref="myRealm"></property>
+
+    </bean>
+    <!--配置进行授权和认证的Realm-->
+    <bean id="myRealm" class="spring_shiro.MyRealm" init-method="setCredentialMatcher"/>
+
+    <!--配置bean的后置处理器: 会自动调用和spring整合后的各个组件的生命周期方法-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"></bean>
+
+    <!--使shiro的注解起作用,shiro的注解标识在方法上 例如: @RequiresRoles,@RequiresPermissions-->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor"/>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+
+    <!--配置shiroFilter bean 这个bean的id必须和web.xml中配置的shiro filte-rname一致-->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!--装配securityManager-->
+        <property name="securityManager" ref="securityManager"/>
+
+        <!--配置登录页面-->
+        <property name="loginUrl" value="/shiro-login.jsp"/>
+        <!--配置登录成功页面-->
+        <property name="successUrl" value="/shiro-success.jsp" />
+        <!--配置登录失败的页面-->
+        <property name="unauthorizedUrl" value="/shiro-unauthorized.jsp"/>
+        <!--具体配置需要拦截那些url,以及访问对应的url时使用Shiro的什么Filter进行拦截-->
+        <property name="filterChainDefinitions">
+            <value>
+                /shiro-*.jsp = anon
+                /login = anon
+                /logout = logout
+                /user.jsp = roles[user]
+                /user.jsp = perms[create]
+                /admin.jsp = roles[admin]
+                /admin.jsp = perms[add]
+                /** = authc
+            </value>
+        </property>
+    </bean>
+</beans>

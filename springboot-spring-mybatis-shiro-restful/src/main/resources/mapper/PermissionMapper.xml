@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tzh.mapper.PermissionMapper">
+
+    <!-- 查询总条数 -->
+    <select id="getCount" parameterType="com.tzh.entity.Permission" resultType="java.lang.Integer">
+        select count(*) from permission
+    </select>
+
+
+    <select id="getById" parameterType="java.lang.Integer" resultType="com.tzh.entity.Permission">
+        select * from permission where id = #{id}
+    </select>
+
+    <!-- 查询总条数 -->
+    <select id="queryAll" resultType="com.tzh.entity.Permission">
+        select * from permission
+    </select>
+
+
+    <!-- 取别名 -->
+    <resultMap type="com.tzh.entity.Business" id="permissionList">
+        <id column="id" property="permission.id"/>
+        <result column="url" property="permission.url"/>
+        <result column="urlDescription" property="permission.urlDescription"/>
+        <result column="requestMode" property="permission.requestMode"/>
+    </resultMap>
+
+
+    <!-- 分页查询所有数据 -->
+    <select id="query" parameterType="com.tzh.entity.Business" resultMap="permissionList">
+        select * from permission
+        <if test="t.order == 0">
+            order by id asc limit #{limitNum},#{pageSize}
+        </if>
+        <if test="t.order == 1">
+            order by id desc limit #{limitNum},#{pageSize}
+        </if>
+    </select>
+
+
+    <!-- 添加角色数据 -->
+    <insert id="add" parameterType="com.tzh.entity.Permission">
+		insert into permission(url,urlDescription,requestMode) values (#{url},#{urlDescription},#{requestMode})
+	</insert>
+
+
+    <!-- 修改角色数据 -->
+    <update id="update" parameterType="com.tzh.entity.Permission">
+		update permission set url=#{url},urlDescription=#{urlDescription},requestMode=#{requestMode} where id=#{id}
+	</update>
+
+
+    <!-- 删除角色数据 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+		delete from permission where id = #{id}
+	</delete>
+
+
+    <!-- 根据用户名查询权限 -->
+    <select id="authorTag" parameterType="java.lang.String" resultType="java.lang.Integer">
+			select count(p.id) from user u INNER JOIN user_role ur INNER JOIN role r INNER JOIN role_permission rp INNER JOIN permission p on u.id = ur.uid and ur.rid = r.id and r.id = rp.rid and rp.pid = p.id where u.username = #{username} and p.url=#{url} and p.requestMode=#{requestMode}
+	</select>
+
+</mapper>

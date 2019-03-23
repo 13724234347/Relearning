@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tzh.mapper.UserMapper">
+
+    <!-- 查询总条数 -->
+    <select id="getCount" parameterType="com.tzh.entity.User" resultType="java.lang.Integer">
+        select count(*) from user
+    </select>
+
+    <select id="getById" parameterType="java.lang.Integer" resultType="com.tzh.entity.User">
+        select * from user where id = #{id}
+    </select>
+    <!-- 取别名 -->
+    <resultMap type="com.tzh.entity.Business" id="userList">
+        <id column="id" property="user.id"/>
+        <result column="username" property="user.username"/>
+        <result column="email" property="user.email"/>
+        <result column="password" property="user.password"/>
+        <result column="create_time" property="user.createTime"/>
+        <result column="last_login_time" property="user.lastLoginTime"/>
+        <result column="status" property="user.status"/>
+    </resultMap>
+
+    <!-- 分页查询所有数据 -->
+    <select id="query" parameterType="com.tzh.entity.Business" resultMap="userList">
+        select * from user
+        <if test="t.order == 0">
+            order by id asc limit #{limitNum},#{pageSize}
+        </if>
+        <if test="t.order == 1">
+            order by id desc limit #{limitNum},#{pageSize}
+        </if>
+    </select>
+
+    <!-- 查询所有角色 -->
+    <select id="queryAllRole" parameterType="com.tzh.entity.Role" resultType="com.tzh.entity.Role">
+        select * from role
+    </select>
+
+
+    <!-- 添加用户数据 -->
+    <insert id="add" parameterType="com.tzh.entity.User">
+		insert into user(username,password,email,create_time,last_login_time,status)values(#{username},#{password},#{email},#{createTime},#{lastLoginTime},#{status})
+	</insert>
+
+    <insert id="addRole" parameterType="java.lang.Long">
+        insert into user_role (uid,rid)
+        values
+        <foreach collection="rid" item="item" index="index" separator=",">
+            (#{uid}, #{item})
+        </foreach>
+    </insert>
+
+
+    <!-- 修改用户数据 -->
+    <update id="update" parameterType="com.tzh.entity.User">
+		update user set username=#{username},email=#{email},status=#{status} where id=#{id}
+	</update>
+
+
+    <!-- 删除用户数据 -->
+    <delete id="delete" parameterType="java.lang.Integer">
+		delete from user where id = #{id}
+	</delete>
+
+    <delete id="deleteUser_role" parameterType="java.lang.Integer">
+        delete from user_role where uid=#{id}
+    </delete>
+
+    <!-- 根据用户id查询角色 -->
+    <select id="getRoleByUserId" parameterType="java.lang.Integer" resultType="com.tzh.entity.Role">
+		select r.* from user u INNER JOIN user_role ur INNER JOIN role r on u.id = ur.uid and ur.rid = r.id where u.id= #{id}
+	</select>
+
+
+    <!-- 根据用户名查询角色 -->
+    <select id="getRole" parameterType="java.lang.String" resultType="com.tzh.entity.Role">
+		select r.* from user u INNER JOIN user_role ur INNER JOIN role r on u.id = ur.uid and ur.rid = r.id where u.username = #{username}
+	</select>
+
+
+    <!-- 根据用户名查询权限 -->
+    <select id="getPermission" parameterType="java.lang.String" resultType="com.tzh.entity.Permission">
+		select p.* from user u INNER JOIN user_role ur INNER JOIN role r INNER JOIN role_permission rp INNER JOIN permission p on u.id = ur.uid and ur.rid = r.id and r.id = rp.rid and rp.pid = p.id where u.username = #{username}
+	</select>
+
+</mapper>

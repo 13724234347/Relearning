@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 扫描com.yr下的所有包 -->
+    <context:component-scan base-package="com.tzh"/>
+
+    <import resource="classpath:META-INF/cxf/cxf.xml"/>
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
+
+    <jaxws:server address="/userWebService" serviceClass="com.tzh.webservice.UserWebService">
+        <!-- 服务接口的实现类 -->
+        <jaxws:serviceBean>
+            <bean class="com.tzh.webservice.UserWebServiceImplement"></bean>
+        </jaxws:serviceBean>
+        <jaxws:inInterceptors>
+            <bean class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor"/>
+            <bean class="org.web.soapHeader.ReadSoapHeader"></bean>
+            <bean class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+                <constructor-arg>
+                    <map>
+                        <entry key="action" value="UsernameToken"/>
+                        <entry key="passwordType"
+                               value="PasswordText"/>
+                        <entry key="user" value="cxfServer"/>
+                        <entry key="passwordCallbackRef">
+                            <ref bean="serverPasswordCallback"/>
+                        </entry>
+                    </map>
+                </constructor-arg>
+            </bean>
+        </jaxws:inInterceptors>
+    </jaxws:server>
+</beans>
